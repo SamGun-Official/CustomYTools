@@ -1,12 +1,17 @@
 {
-	"name": "Custom YouTube Extension",
+	"name": "CustomYT Extension",
 	"version": "1.0.0",
-	"description": "This extension was made because YouTube has so many flaws and can be so annoying when in use.",
+	"description": "This extension was created to address various flaws in YouTube and provide necessary fixes.",
 	"manifest_version": 3,
-	"author": "Samuel Gunawan",
+	"author": "SamGun-Official",
 	"action": {
+		"default_icon": {
+			"16": "src/images/logo.png",
+			"24": "src/images/logo.png",
+			"32": "src/images/logo.png"
+		},
 		"default_popup": "popup.html",
-		"default_title": "Custom YouTube Extension"
+		"default_title": "CustomYT Extension"
 	},
 	"background": {
 		"service_worker": "src/js/background.js"
@@ -26,6 +31,18 @@
 			]
 		}
 	],
+	"web_accessible_resources": [
+		{
+			"resources": [
+				"scripts/yt-no-ads.js",
+				"scripts/yt-no-chat.js",
+				"scripts/yt-no-shorts.js"
+			],
+			"matches": [
+				"*://*.youtube.com/*"
+			]
+		}
+	],
 	"externally_connectable": {
 		"matches": [
 			"*://*.youtube.com/*"
@@ -34,7 +51,14 @@
 	"host_permissions": [
 		"*://*.youtube.com/*"
 	],
+	"icons": {
+		"16": "src/images/logo.png",
+		"32": "src/images/logo.png",
+		"48": "src/images/logo.png",
+		"128": "src/images/logo.png"
+	},
 	"permissions": [
-		"storage"
+		"storage",
+		"tabs"
 	]
 }

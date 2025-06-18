@@ -4,48 +4,65 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
-		<title>Custom YouTube Extension</title>
-		<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daisyui@4.10.1/dist/full.min.css" />
+		<title>CustomYT Extension</title>
+		<script type="text/javascript" src="src/js/jquery-3.7.1.min.js"></script>
 		<link rel="stylesheet" type="text/css" href="src/css/build.css" />
 		<link rel="stylesheet" type="text/css" href="src/css/style.css" />
-		<script type="text/javascript" src="src/js/jquery-3.7.1.min.js"></script>
-		<script type="module" src="src/js/binding.js" defer></script>
 	</head>
-	<body class="flex items-center justify-center">
-		<div id="wrapper" class="bg-[#0f0f0f] min-w-96 max-w-xl w-full">
+	<body class="min-w-80 w-full flex items-center justify-center" data-theme="dark">
+		<div id="wrapper" class="w-full text-sm">
 			<div class="container">
-				<div class="bg-[#3d3d3d] p-2 flex items-center justify-between">
-					<h1 class="text-lg font-semibold">Custom YouTube Extension</h1>
-				</div>
-				<div class="p-2">
-					<ul>
-						<li>
-							<div class="form-control">
-								<label class="label cursor-pointer" for="no_ads_feature">
-									<span class="label-text">YouTube No Ads</span>
-									<input type="checkbox" class="toggle toggle-success" name="no_ads_feature" id="no_ads_feature" />
+				<header class="flex items-center justify-between px-4 py-2 text-lg font-semibold">
+					<h1 id="extension_title" class="text-info">CustomYT Extension</h1>
+					<span id="extension_version" class="text-accent">v1.0.0</span>
+				</header>
+				<div class="divider h-0.5 my-0"></div>
+				<main class="flex flex-col gap-y-2 px-4 py-2">
+					<div id="info">
+						<span>Status:</span>
+						<span id="page_status" class="text-warning font-bold">Current tab is in YouTube!</span>
+					</div>
+					<div id="options">
+						<ul class="flex flex-col gap-y-2 font-semibold line-through">
+							<li class="form-control">
+								<label class="label w-full flex justify-between p-0 cursor-pointer" for="block_ads">
+									<span class="label-text">1.&nbsp;&nbsp;Block Ads</span>
+									<input type="checkbox" class="toggle toggle-success" name="block_ads" id="block_ads" disabled />
 								</label>
-							</div>
-						</li>
-						<li>
-							<div class="form-control">
-								<label class="label cursor-pointer" for="no_shorts_feature">
-									<span class="label-text">YouTube No Shorts</span>
-									<input type="checkbox" class="toggle toggle-success" name="no_shorts_feature" id="no_shorts_feature" />
+							</li>
+							<li class="form-control">
+								<label class="label w-full flex justify-between p-0 cursor-pointer" for="no_shorts">
+									<span class="label-text">2.&nbsp;&nbsp;Disable Shorts</span>
+									<input type="checkbox" class="toggle toggle-success" name="no_shorts" id="no_shorts" disabled />
 								</label>
-							</div>
-						</li>
-						<li>
-							<div class="form-control">
-								<label class="label cursor-pointer" for="no_stream_chat_feature">
-									<span class="label-text">YouTube No Live Chat</span>
-									<input type="checkbox" class="toggle toggle-success" name="no_stream_chat_feature" id="no_stream_chat_feature" />
+							</li>
+							<li class="form-control">
+								<label class="label w-full flex justify-between p-0 cursor-pointer" for="hide_chat">
+									<span class="label-text">3.&nbsp;&nbsp;Hide Live Chat</span>
+									<input type="checkbox" class="toggle toggle-success" name="hide_chat" id="hide_chat" disabled />
 								</label>
-							</div>
-						</li>
-					</ul>
-				</div>
+							</li>
+							<li class="form-control">
+								<label class="label w-full flex justify-between p-0 cursor-pointer" for="custom_loop">
+									<span class="label-text">4.&nbsp;&nbsp;Custom Video Loop</span>
+									<input type="checkbox" class="toggle toggle-success" name="custom_loop" id="custom_loop" disabled />
+								</label>
+							</li>
+						</ul>
+					</div>
+				</main>
+				<div class="divider h-0.5 my-0"></div>
+				<footer class="flex items-center justify-between px-4 py-2">
+					<a href="https://github.com/SamGun-Official" class="w-full flex items-center gap-x-3" target="_blank">
+						<img src="./src/images/github.png" class="w-9 h-9" alt="GitHub" />
+						<div class="flex flex-col text-info leading-snug">
+							<span class="text-sm font-semibold">SamGun-Official</span>
+							<span class="text-xs">(https://github.com/SamGun-Official)</span>
+						</div>
+					</a>
+				</footer>
 			</div>
 		</div>
+		<script src="src/js/popup.js"></script>
 	</body>
 </html>

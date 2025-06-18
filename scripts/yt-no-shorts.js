@@ -11,13 +11,32 @@
 // @grant        none
 // ==/UserScript==
 
-(function () {
+// (function () {
+// 	"use strict";
+
+// 	let refreshInterval = setInterval(() => {
+// 		const regexPattern = /^.*\/shorts\/([a-zA-Z0-9_-]+).*$/;
+// 		const shortsURL = window.location.href;
+// 		const matchResult = shortsURL.match(regexPattern);
+// 		if (matchResult) {
+// 			const videoID = matchResult[1];
+// 			const watchURL = `https://www.youtube.com/watch?v=${videoID}`;
+// 			window.history.back();
+// 			window.location.href = watchURL;
+// 			clearInterval(refreshInterval);
+// 		}
+// 	}, 100);
+// })();
+
+// Fungsi utama yang akan diekspor
+function main() {
 	"use strict";
 
 	let refreshInterval = setInterval(() => {
 		const regexPattern = /^.*\/shorts\/([a-zA-Z0-9_-]+).*$/;
 		const shortsURL = window.location.href;
 		const matchResult = shortsURL.match(regexPattern);
+
 		if (matchResult) {
 			const videoID = matchResult[1];
 			const watchURL = `https://www.youtube.com/watch?v=${videoID}`;
@@ -26,4 +45,7 @@
 			clearInterval(refreshInterval);
 		}
 	}, 100);
-})();
+}
+
+// Ekspor fungsi utama agar bisa diimport
+export { main };
