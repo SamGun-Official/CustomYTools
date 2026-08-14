@@ -1,68 +1,52 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en-US">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
-		<title>CustomYT Extension</title>
-		<script type="text/javascript" src="src/js/jquery-3.7.1.min.js"></script>
+		<title>CustomYTools</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" />
 		<link rel="stylesheet" type="text/css" href="src/css/build.css" />
 		<link rel="stylesheet" type="text/css" href="src/css/style.css" />
 	</head>
-	<body class="min-w-80 w-full flex items-center justify-center" data-theme="dark">
-		<div id="wrapper" class="w-full text-sm">
-			<div class="container">
-				<header class="flex items-center justify-between px-4 py-2 text-lg font-semibold">
-					<h1 id="extension_title" class="text-info">CustomYT Extension</h1>
-					<span id="extension_version" class="text-accent">v1.0.0</span>
-				</header>
-				<div class="divider h-0.5 my-0"></div>
-				<main class="flex flex-col gap-y-2 px-4 py-2">
-					<div id="info">
-						<span>Status:</span>
-						<span id="page_status" class="text-warning font-bold">Current tab is in YouTube!</span>
+	<body class="w-[400px] min-h-60 flex flex-col !text-sm" data-theme="dark">
+		<div id="wrapper" class="container w-full flex flex-col grow">
+			<header class="flex items-center justify-between px-4 py-2 font-semibold text-xl leading-none select-none">
+				<div class="flex items-center gap-x-3">
+					<img src="src/images/logo.png" class="w-6 h-6" alt="Logo" />
+					<h1 class="text-info">CustomYTools</h1>
+				</div>
+				<span id="extension_version" class="text-accent">v1.0.0</span>
+			</header>
+			<div class="divider h-0.5 my-0"></div>
+			<main class="flex flex-col grow gap-y-2 px-4 py-2 select-none">
+				<div id="info_status" class="font-bold">
+					<span class="text-primary-content">Current Tab:</span>
+					<span id="info_detail" class="text-success !text-warning">Not YouTube</span>
+				</div>
+				<ol id="options" class="flex flex-col gap-y-1 font-semibold line-through">
+					<li class="form-control bg-success-content !bg-warning-content rounded-xl">
+						<label for="dummy" class="label w-full flex justify-between p-0 cursor-pointer">
+							<span class="px-2">0.&nbsp;&nbsp;Dummy</span>
+							<input type="checkbox" name="dummy" id="dummy" class="toggle toggle-success bg-base-100" data-locked="true" disabled />
+						</label>
+					</li>
+				</ol>
+			</main>
+			<div class="divider h-0.5 my-0"></div>
+			<footer class="flex items-center justify-between select-none">
+				<a href="https://github.com/SamGun-Official" target="_blank" class="w-full flex items-center gap-x-3 px-4 py-2 overflow-info" title="https://github.com/SamGun-Official">
+					<img src="src/images/github.png" class="w-10 h-10" alt="GitHub" />
+					<div class="flex flex-col text-info overflow-info">
+						<span class="font-semibold">Made By: SamGun-Official</span>
+						<span class="overflow-info">(<u>https://github.com/SamGun-Official</u>)</span>
 					</div>
-					<div id="options">
-						<ul class="flex flex-col gap-y-2 font-semibold line-through">
-							<li class="form-control">
-								<label class="label w-full flex justify-between p-0 cursor-pointer" for="block_ads">
-									<span class="label-text">1.&nbsp;&nbsp;Block Ads</span>
-									<input type="checkbox" class="toggle toggle-success" name="block_ads" id="block_ads" disabled />
-								</label>
-							</li>
-							<li class="form-control">
-								<label class="label w-full flex justify-between p-0 cursor-pointer" for="no_shorts">
-									<span class="label-text">2.&nbsp;&nbsp;Disable Shorts</span>
-									<input type="checkbox" class="toggle toggle-success" name="no_shorts" id="no_shorts" disabled />
-								</label>
-							</li>
-							<li class="form-control">
-								<label class="label w-full flex justify-between p-0 cursor-pointer" for="hide_chat">
-									<span class="label-text">3.&nbsp;&nbsp;Hide Live Chat</span>
-									<input type="checkbox" class="toggle toggle-success" name="hide_chat" id="hide_chat" disabled />
-								</label>
-							</li>
-							<li class="form-control">
-								<label class="label w-full flex justify-between p-0 cursor-pointer" for="custom_loop">
-									<span class="label-text">4.&nbsp;&nbsp;Custom Video Loop</span>
-									<input type="checkbox" class="toggle toggle-success" name="custom_loop" id="custom_loop" disabled />
-								</label>
-							</li>
-						</ul>
-					</div>
-				</main>
-				<div class="divider h-0.5 my-0"></div>
-				<footer class="flex items-center justify-between px-4 py-2">
-					<a href="https://github.com/SamGun-Official" class="w-full flex items-center gap-x-3" target="_blank">
-						<img src="./src/images/github.png" class="w-9 h-9" alt="GitHub" />
-						<div class="flex flex-col text-info leading-snug">
-							<span class="text-sm font-semibold">SamGun-Official</span>
-							<span class="text-xs">(https://github.com/SamGun-Official)</span>
-						</div>
-					</a>
-				</footer>
-			</div>
+				</a>
+			</footer>
 		</div>
-		<script src="src/js/popup.js"></script>
+		<a href="javascript:void()" target="_blank" id="download_notifier" class="w-full h-10 flex items-center justify-center bg-info font-bold text-xs text-neutral underline select-none" data-update-available="false">CLICK HERE TO DOWNLOAD THE LATEST UPDATE&nbsp;(<span>v2.0.0</span>)</a>
+		<script type="text/javascript" src="src/js/popup.js"></script>
 	</body>
 </html>

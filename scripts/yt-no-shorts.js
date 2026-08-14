@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         YouTube Shorts (No Loop)
 // @namespace    http://tampermonkey.net/
-// @version      1.3
-// @description  Rewrite "Shorts" URL into traditional watch URL.
+// @version      1.4
+// @description  Automatically redirect "Shorts" videos to the normal YouTube player.
 // @author       SamGun-Official
 // @match        https://www.youtube.com/*
 // @match        https://youtube.com/*
@@ -11,41 +11,17 @@
 // @grant        none
 // ==/UserScript==
 
-// (function () {
-// 	"use strict";
-
-// 	let refreshInterval = setInterval(() => {
-// 		const regexPattern = /^.*\/shorts\/([a-zA-Z0-9_-]+).*$/;
-// 		const shortsURL = window.location.href;
-// 		const matchResult = shortsURL.match(regexPattern);
-// 		if (matchResult) {
-// 			const videoID = matchResult[1];
-// 			const watchURL = `https://www.youtube.com/watch?v=${videoID}`;
-// 			window.history.back();
-// 			window.location.href = watchURL;
-// 			clearInterval(refreshInterval);
-// 		}
-// 	}, 100);
-// })();
-
-// Fungsi utama yang akan diekspor
-function main() {
+(function () {
 	"use strict";
 
 	let refreshInterval = setInterval(() => {
 		const regexPattern = /^.*\/shorts\/([a-zA-Z0-9_-]+).*$/;
-		const shortsURL = window.location.href;
-		const matchResult = shortsURL.match(regexPattern);
-
-		if (matchResult) {
-			const videoID = matchResult[1];
-			const watchURL = `https://www.youtube.com/watch?v=${videoID}`;
-			window.history.back();
-			window.location.href = watchURL;
+		const matchResults = window.location.href.match(regexPattern);
+		if (matchResults) {
+			const videoId = matchResults[1];
+			const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
+			window.location.replace(watchUrl);
 			clearInterval(refreshInterval);
 		}
 	}, 100);
-}
-
-// Ekspor fungsi utama agar bisa diimport
-export { main };
+})();

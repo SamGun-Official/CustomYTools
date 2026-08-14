@@ -1,6 +1,6 @@
 {
-	"name": "CustomYT Extension",
-	"version": "1.0.0",
+	"name": "CustomYTools",
+	"version": "1.1.0",
 	"description": "This extension was created to address various flaws in YouTube and provide necessary fixes.",
 	"manifest_version": 3,
 	"author": "SamGun-Official",
@@ -11,7 +11,7 @@
 			"32": "src/images/logo.png"
 		},
 		"default_popup": "popup.html",
-		"default_title": "CustomYT Extension"
+		"default_title": "CustomYTools"
 	},
 	"background": {
 		"service_worker": "src/js/background.js"
@@ -24,32 +24,17 @@
 				"*://m.youtube.com/*"
 			],
 			"exclude_matches": [
-				"*://*.music.youtube.com/*"
+				"*://music.youtube.com/*"
 			],
 			"js": [
 				"src/js/content.js"
-			]
-		}
-	],
-	"web_accessible_resources": [
-		{
-			"resources": [
-				"scripts/yt-no-ads.js",
-				"scripts/yt-no-chat.js",
-				"scripts/yt-no-shorts.js"
 			],
-			"matches": [
-				"*://*.youtube.com/*"
-			]
+			"world": "ISOLATED"
 		}
 	],
-	"externally_connectable": {
-		"matches": [
-			"*://*.youtube.com/*"
-		]
-	},
 	"host_permissions": [
-		"*://*.youtube.com/*"
+		"*://youtube.com/*",
+		"*://*.youtube.com/*",
 	],
 	"icons": {
 		"16": "src/images/logo.png",
@@ -58,7 +43,10 @@
 		"128": "src/images/logo.png"
 	},
 	"permissions": [
+		"activeTab",
+		"scripting",
 		"storage",
-		"tabs"
+		"tabs",
+		"userScripts"
 	]
 }

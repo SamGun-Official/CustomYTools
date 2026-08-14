@@ -1,122 +1,130 @@
-const ytURL = /^(https?:\/\/)?(www\.)?(youtube\.com|m\.youtube\.com|youtu\.be)(\/.*)?$/;
-let jsonData = {
-	BLOCK_ADS: {
-		REFRESH_TIMER: null,
-		TOGGLE_STATE: false,
-	},
-	NO_SHORTS: {
-		REFRESH_TIMER: null,
-		TOGGLE_STATE: false,
-	},
-	HIDE_CHAT: {
-		REFRESH_TIMER: null,
-		TOGGLE_STATE: false,
-	},
-	CUSTOM_LOOP: {
-		REFRESH_TIMER: null,
-		TOGGLE_STATE: false,
-	},
-};
+const YT_REGEX = /^(https?:\/\/)?(www\.)?(youtube\.com|m\.youtube\.com|youtu\.be)(\/.*)?$/;
+const DATA_KEY = "featureList";
 
-function getManifestInfo(message, sendResponse) {
-	if (message.type === "GET_MANIFEST_INFO") {
-		const data = chrome.runtime.getManifest();
-		if (data.version) {
-			sendResponse({
-				manifestName: data.name,
-				manifestVersion: data.version,
+async function loadDefaultConfig() {
+	return fetch(chrome.runtime.getURL("config.json")).then((response) => response.json());
+}
+
+function checkAvailableFeatures(storedFeatures, defaultFeatures) {
+	return defaultFeatures.map((df) => {
+		return new Map((storedFeatures ?? []).map((sf) => [sf.slug, sf])).get(df.slug) ?? df;
+	});
+}
+
+function getDataFromStorage(callbackFn) {
+	loadDefaultConfig().then((defaultConfig) => {
+		chrome.storage.local.get(null, (data) => {
+			if (chrome.runtime.lastError) {
+				callbackFn({ error: chrome.runtime.lastError });
+				return;
+			}
+
+			const defaultDataKeys = Object.keys(defaultConfig);
+			const unusedDataKeys = Object.keys(data).filter((key) => !defaultDataKeys.includes(key));
+			const dataStorage = {};
+			for (const dataKey of defaultDataKeys) {
+				dataStorage[dataKey] = data[dataKey] ?? defaultConfig[dataKey];
+				if (dataKey === DATA_KEY) {
+					dataStorage[DATA_KEY] = checkAvailableFeatures(data[dataKey], defaultConfig[dataKey]);
+				}
+			}
+
+			chrome.storage.local.remove(unusedDataKeys, () => {
+				if (chrome.runtime.lastError) {
+					callbackFn({ error: chrome.runtime.lastError });
+					return;
+				}
+
+				callbackFn(dataStorage);
 			});
-		}
-	}
-}
-
-function detectActiveURL(message, sendResponse) {
-	if (message.type === "DETECT_ACTIVE_URL") {
-		chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-			if (tabs.length > 0) {
-				const isYT = ytURL.test(tabs[0].url);
-				sendResponse({ tabStatusUpdate: true, isYT });
-			} else {
-				sendResponse({ tabStatusUpdate: false });
-			}
-		});
-	}
-}
-
-function getToggleState() {
-	chrome.storage.local.get(["jsonData"]).then((data) => {
-		if (data.jsonData) {
-			jsonData = data.jsonData;
-		}
-
-		chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-			if (tabs.length > 0) {
-				chrome.tabs
-					.sendMessage(tabs[0].id, { data: jsonData, key: "ALL" })
-					.then((response) => {
-						console.log(response);
-						if (response.key) {
-							jsonData[response.key]["REFRESH_TIMER"] = response.timer;
-							chrome.storage.local.set({ jsonData });
-						}
-					})
-					.catch((error) => {});
-			}
 		});
 	});
 }
 
-function setToggleState(optionKey = undefined) {
-	if (typeof optionKey === "string") {
-		jsonData[optionKey]["TOGGLE_STATE"] = !jsonData[optionKey]["TOGGLE_STATE"];
-	} else {
-		optionKey = "ALL";
-	}
+function setDataToStorage(data, callbackFn = () => {}) {
+	chrome.storage.local.set({ ...data }, () => {
+		if (chrome.runtime.lastError) {
+			callbackFn({ error: chrome.runtime.lastError });
+			return;
+		}
 
-	chrome.storage.local.set({ jsonData: jsonData }).then(async () => {
-		chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-			if (tabs.length > 0) {
-				chrome.tabs
-					.sendMessage(tabs[0].id, { data: jsonData, key: optionKey })
-					.then((response) => {
-						console.log(response);
-						if (response.key) {
-							jsonData[response.key]["REFRESH_TIMER"] = response.timer;
-							chrome.storage.local.set({ jsonData });
-						}
-					})
-					.catch((error) => {});
+		callbackFn(data);
+	});
+}
+
+function getExtensionState(callbackFn) {
+	chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+		if (chrome.runtime.lastError) {
+			callbackFn({ error: chrome.runtime.lastError });
+			return;
+		}
+
+		getDataFromStorage((data) => {
+			const manifestVersion = chrome.runtime.getManifest().version;
+			const defaultResponse = { ...data, tab: tabs[0], manifestVersion, isValidTargetTab: false };
+			if (data.error || !YT_REGEX.test(defaultResponse.tab.url)) {
+				callbackFn(defaultResponse);
+				return;
 			}
+
+			callbackFn({ ...defaultResponse, isValidTargetTab: true });
 		});
 	});
 }
 
-function updateToggleState(message, sendResponse) {
-	if (message.type === "GET_TOGGLE_STATE") {
-		getToggleState();
-		sendResponse({ enabledScript: jsonData });
-	} else if (message.type === "SET_TOGGLE_STATE") {
-		setToggleState(message.key);
-		sendResponse({ enabledScript: jsonData });
-	}
+function toggleFeature(slug, callbackFn) {
+	getExtensionState((data) => {
+		if (data.error || !data.isValidTargetTab) {
+			callbackFn(data);
+			return;
+		}
+
+		const feature = data.featureList.find((item) => item.slug === slug);
+		if (feature && !feature.locked) {
+			feature.active = !feature.active;
+		}
+
+		setDataToStorage(data, (update) => {
+			if (update.error) {
+				callbackFn({ error: update.error });
+				return;
+			}
+
+			chrome.tabs.reload(update.tab.id, () => {
+				if (chrome.runtime.lastError) {
+					callbackFn({ error: chrome.runtime.lastError });
+					return;
+				}
+
+				callbackFn(update);
+			});
+		});
+	});
 }
 
-function popupMessageHandler(message, sender, sendResponse) {
-	getManifestInfo(message, sendResponse);
-	detectActiveURL(message, sendResponse);
-	updateToggleState(message, sendResponse);
+chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
+	if (message.action === "GET_EXTENSION_STATE") {
+		getExtensionState((data) => sendResponse(data));
+	} else if (message.action === "TOGGLE_FEATURE") {
+		toggleFeature(message.slug, (update) => sendResponse(update));
+	}
 
 	return true;
-}
-
-chrome.runtime.onInstalled.addListener(setToggleState);
-chrome.runtime.onMessage.addListener(popupMessageHandler);
-chrome.runtime.onStartup.addListener(getToggleState);
-chrome.tabs.onActivated.addListener(getToggleState);
-chrome.tabs.onCreated.addListener(getToggleState);
+});
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-	console.log(changeInfo);
-	if (changeInfo.status === "complete") {
-		getToggleState();
+	if (changeInfo.status === "complete" && YT_REGEX.test(tab.url || "")) {
+		getDataFromStorage((data) => {
+			if (data.error) {
+				return;
+			}
+			for (const feature of data.featureList) {
+				if (feature.active && feature.location) {
+					chrome.scripting.executeScript({
+						target: { tabId },
+						files: [feature.location],
+					});
+				}
+			}
+		});
 	}
 });

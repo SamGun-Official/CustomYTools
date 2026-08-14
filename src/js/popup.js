@@ -1,44 +1,80 @@
-function getManifestInfo() {
-	chrome.runtime.sendMessage({ type: "GET_MANIFEST_INFO" }).then((response) => {
-		$("#extension_title").text(response.manifestName);
-		$("#extension_version").text(`v${response.manifestVersion}`);
-	});
-}
+function populateFeatures(isValidTargetTab, featureList) {
+	const wrapper = document.getElementById("wrapper");
+	const options = document.getElementById("options");
+	const dummyLi = document.querySelector("li:has(#dummy)");
+	featureList.forEach((feature, index) => {
+		const li = dummyLi.cloneNode(true);
+		li.querySelector("label").setAttribute("for", feature.slug);
+		li.querySelector("span").textContent = `${index + 1}.  ${feature.name}`;
 
-function detectActiveURL() {
-	chrome.runtime.sendMessage({ type: "DETECT_ACTIVE_URL" }).then((response) => {
-		if (response.tabStatusUpdate === true) {
-			$("#page_status").text(response.isYT ? "Current tab is in YouTube!" : "Current tab is not in YouTube!");
-			$(".toggle").prop("disabled", !response.isYT);
-			if (response.isYT) {
-				$("#options > ul").removeClass("line-through");
-				flipOptionsToggle();
-			}
-		}
-	});
-}
+		const input = li.querySelector("input");
+		input.name = input.id = feature.slug;
+		input.dataset.locked = feature.locked || !isValidTargetTab ? "true" : "false";
+		input.addEventListener("change", function () {
+			const toggleLastState = this.checked;
+			wrapper.inert = true;
+			chrome.runtime.sendMessage({ action: "TOGGLE_FEATURE", slug: feature.slug }, (response) => {
+				if (response.error) {
+					input.checked = toggleLastState;
+				}
 
-function flipOptionsToggle(toggleBtn = undefined) {
-	if (toggleBtn === undefined) {
-		chrome.runtime.sendMessage({ type: "GET_TOGGLE_STATE" }).then((response) => {
-			if (response.enabledScript) {
-				$.each($(".toggle"), function (index, element) {
-					const optionKey = $(element).attr("name").toUpperCase();
-					$(element).prop("checked", response.enabledScript[optionKey]["TOGGLE_STATE"]);
-				});
-			}
+				wrapper.inert = false;
+			});
 		});
-	} else {
-		const optionKey = $(toggleBtn).attr("name").toUpperCase();
-		chrome.runtime.sendMessage({ type: "SET_TOGGLE_STATE", key: optionKey }).then((response) => {});
+		if (!feature.locked && isValidTargetTab) {
+			input.removeAttribute("disabled");
+		}
+		if (feature.active && isValidTargetTab) {
+			input.checked = true;
+		}
+
+		options.appendChild(li);
+	});
+	if (featureList.length > 0) {
+		dummyLi.remove();
 	}
 }
 
-$(document).ready(function () {
-	getManifestInfo();
-	detectActiveURL();
+function getExtensionState() {
+	chrome.runtime.sendMessage({ action: "GET_EXTENSION_STATE" }, (response) => {
+		if (response.error) {
+			return;
+		}
 
-	$(".toggle").on("change", function () {
-		flipOptionsToggle(this);
+		const statusText = document.querySelector("#info_detail");
+		const isValidTargetTab = response.isValidTargetTab;
+		if (isValidTargetTab) {
+			statusText.textContent = "YouTube";
+			statusText.classList.remove("!text-warning");
+			document.getElementById("options").classList.remove("line-through");
+			document.querySelectorAll(".form-control").forEach((element) => element.classList.remove("!bg-warning-content"));
+		} else {
+			statusText.textContent = "Not YouTube";
+			statusText.classList.add("!text-warning");
+			document.getElementById("options").classList.add("line-through");
+			document.querySelectorAll(".form-control").forEach((element) => element.classList.add("!bg-warning-content"));
+		}
+
+		const featureList = response.featureList;
+		if (Array.isArray(featureList) && document.getElementById("dummy") !== null) {
+			populateFeatures(isValidTargetTab, featureList);
+		}
+
+		const isNewerVersion = response.isNewerVersion;
+		const downloadNotifier = document.getElementById("download_notifier");
+		if (isNewerVersion) {
+			downloadNotifier.dataset.updateAvailable = isNewerVersion;
+			downloadNotifier.href = response.lastDownloadUrl;
+			downloadNotifier.querySelector("span").textContent = `v${response.lastNotifiedVersion}`;
+			downloadNotifier.classList.remove("hidden");
+		} else {
+			downloadNotifier.classList.add("hidden");
+		}
+
+		document.getElementById("extension_version").textContent = `v${response.manifestVersion}`;
 	});
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+	getExtensionState();
 });

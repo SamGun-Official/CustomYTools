@@ -1,9 +1,11 @@
 @charset "UTF-8";
 
-/* ===== Default Styles ===== */
-html,
-body {
+* {
 	font-family: "Roboto", sans-serif;
-	font-weight: 400;
-	overflow-x: hidden;
+}
+
+.overflow-info {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }

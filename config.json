@@ -1,0 +1,57 @@
+{
+    "silenceNotification": false,
+    "lastNotifiedVersion": "1.0.0",
+    "lastDownloadUrl": null,
+    "isNewerVersion": false,
+    "featureList": [
+        {
+            "name": "Clean UI",
+            "slug": "clean_ui",
+            "location": "scripts/yt-clean-ui.js",
+            "active": false,
+            "locked": false
+        },
+        {
+            "name": "Redirect Shorts",
+            "slug": "redirect_shorts",
+            "location": "scripts/yt-no-shorts.js",
+            "active": false,
+            "locked": false
+        },
+        {
+            "name": "Suppress Live Chat",
+            "slug": "suppress_live_chat",
+            "location": "scripts/yt-no-chat.js",
+            "active": false,
+            "locked": false
+        },
+        {
+            "name": "Allow Custom Loop",
+            "slug": "allow_custom_loop",
+            "location": "scripts/yt-custom-loop.js",
+            "active": false,
+            "locked": false
+        },
+        {
+            "name": "Disable Auto Translation",
+            "slug": "disable_auto_translation",
+            "location": null,
+            "active": false,
+            "locked": true
+        },
+        {
+            "name": "Player Auto Minimize",
+            "slug": "player_auto_minimize",
+            "location": "scripts/yt-auto-pip.js",
+            "active": false,
+            "locked": false
+        },
+        {
+            "name": "Take Video Snapshot",
+            "slug": "take_video_snapshot",
+            "location": "scripts/yt-take-snapshot.js",
+            "active": false,
+            "locked": false
+        }
+    ]
+}
