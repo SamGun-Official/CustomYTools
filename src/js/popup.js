@@ -64,8 +64,8 @@ function getExtensionState() {
 		const downloadNotifier = document.getElementById("download_notifier");
 		if (isNewerVersion) {
 			downloadNotifier.dataset.updateAvailable = isNewerVersion;
-			downloadNotifier.href = response.lastDownloadUrl;
-			downloadNotifier.querySelector("span").textContent = `v${response.lastNotifiedVersion}`;
+			downloadNotifier.href = downloadNotifier.title = response.latestNotifiedUrl;
+			downloadNotifier.querySelector("span").textContent = `v${response.latestNotifiedVersion}`;
 			downloadNotifier.classList.remove("hidden");
 		} else {
 			downloadNotifier.classList.add("hidden");
@@ -77,4 +77,14 @@ function getExtensionState() {
 
 document.addEventListener("DOMContentLoaded", () => {
 	getExtensionState();
+
+	document.getElementById("check_for_updates").addEventListener("click", () => {
+		chrome.runtime.sendMessage({ action: "CHECK_FOR_UPDATES" }, (response) => {
+			if (response.error) {
+				return;
+			}
+
+			getExtensionState();
+		});
+	});
 });

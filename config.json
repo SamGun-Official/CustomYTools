@@ -1,8 +1,7 @@
 {
-    "silenceNotification": false,
-    "lastNotifiedVersion": "1.0.0",
-    "lastDownloadUrl": null,
-    "isNewerVersion": false,
+    "currentVersion": "1.0.0",
+    "latestNotifiedVersion": "1.0.0",
+    "latestNotifiedUrl": null,
     "featureList": [
         {
             "name": "Clean UI",

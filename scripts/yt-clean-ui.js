@@ -1,16 +1,11 @@
-/**
- * @TODO
- * - Change name so that it's not obvious that this script is "blocking" ads
- */
-
 // ==UserScript==
-// @name         No ADS - YouTube
+// @name         YouTube Clean UI
 // @namespace    http://tampermonkey.net/
-// @version      2.3.8
-// @description  - Skips all youtube ads - | - undetectable - | - skips ads instantly -
-// @author       GSRHaX
-// @match        https://www.youtube.com/*
+// @version      2.3.9
+// @description  Clean and declutter UI in YouTube.
+// @author       SamGun-Official
 // @match        https://youtube.com/*
+// @match        https://www.youtube.com/*
 // @match        https://m.youtube.com/*
 // @icon         https://i.ibb.co/X5f50Cg/Screen-Shot-2021-07-19-at-9-31-54-PM.png
 // @grant        none
