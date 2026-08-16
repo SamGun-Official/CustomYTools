@@ -1,6 +1,6 @@
 {
 	"name": "CustomTools for YouTube™",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"description": "This extension was created to address various flaws in YouTube and provide necessary fixes.",
 	"manifest_version": 3,
 	"author": "SamGun-Official",
@@ -18,8 +18,7 @@
 	},
 	"host_permissions": [
 		"*://youtube.com/*",
-		"*://*.youtube.com/*",
-		"https://samgun-official.my.id/ext-updates/CustomYTools/*"
+		"*://*.youtube.com/*"
 	],
 	"icons": {
 		"16": "src/images/logo.png",

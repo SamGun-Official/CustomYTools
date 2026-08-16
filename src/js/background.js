@@ -1,13 +1,24 @@
-const MANIFEST = "https://samgun-official.my.id/ext-updates/CustomYTools/version.json";
+const MANIFEST = "https://raw.githubusercontent.com/SamGun-Official/CustomYTools/refs/heads/main/version.json";
 const YT_REGEX = /^(https?:\/\/)?(www\.)?(youtube\.com|m\.youtube\.com|youtu\.be)(\/.*)?$/;
 const DATA_KEY = "featureList";
 
+let defaultConfigPromise = null;
+
 async function loadDefaultConfig() {
-	return fetch(chrome.runtime.getURL("config.json")).then((response) => response.json());
+	if (!defaultConfigPromise) {
+		defaultConfigPromise = fetch(chrome.runtime.getURL("config.json")).then((response) => response.json());
+	}
+
+	return defaultConfigPromise;
 }
 
 function checkAvailableFeatures(storedFeatures, defaultFeatures) {
-	return defaultFeatures.map((df) => new Map((storedFeatures ?? []).map((sf) => [sf.slug, sf])).get(df.slug) ?? df);
+	const storedFeaturesMap = new Map((storedFeatures ?? []).map((storedFeature) => [storedFeature.slug, storedFeature]));
+	const reconciledFeatures = defaultFeatures.map((defaultFeature) => {
+		return storedFeaturesMap.get(defaultFeature.slug) ?? defaultFeature;
+	});
+
+	return reconciledFeatures;
 }
 
 function setDataToStorage(data, callbackFn = () => {}) {
@@ -32,11 +43,26 @@ function getDataFromStorage(callbackFn) {
 			const defaultDataKeys = Object.keys(defaultConfig);
 			const unusedDataKeys = Object.keys(data).filter((key) => !defaultDataKeys.includes(key));
 			const dataStorage = {};
+			let isWritingToStorage = unusedDataKeys.length > 0;
 			for (const dataKey of defaultDataKeys) {
-				dataStorage[dataKey] = data[dataKey] ?? defaultConfig[dataKey];
 				if (dataKey === DATA_KEY) {
-					dataStorage[DATA_KEY] = checkAvailableFeatures(data[dataKey], defaultConfig[dataKey]);
+					const storedSlugs = new Set((data[DATA_KEY] ?? []).map((feature) => feature.slug));
+					dataStorage[DATA_KEY] = checkAvailableFeatures(data[DATA_KEY], defaultConfig[DATA_KEY]);
+					if (dataStorage[DATA_KEY].some((feature) => !storedSlugs.has(feature.slug))) {
+						isWritingToStorage = true;
+					}
+
+					continue;
 				}
+
+				dataStorage[dataKey] = data[dataKey] ?? defaultConfig[dataKey];
+				if (data[dataKey] === undefined) {
+					isWritingToStorage = true;
+				}
+			}
+			if (!isWritingToStorage) {
+				callbackFn(dataStorage);
+				return;
 			}
 
 			setDataToStorage(dataStorage, (update) => {
