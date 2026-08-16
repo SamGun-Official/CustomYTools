@@ -48,3 +48,7 @@ The extension checks for updates automatically and will notify you in the popup 
 ## Author
 
 Made by [SamGun-Official](https://github.com/SamGun-Official).
+
+## License
+
+This extension is using MIT License. See more on [this license](https://github.com/SamGun-Official/CustomYTools/blob/main/LICENSE.md).
