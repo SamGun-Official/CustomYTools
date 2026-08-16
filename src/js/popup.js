@@ -6,6 +6,7 @@ function populateFeatures(isValidTargetTab, featureList) {
 		const li = dummyLi.cloneNode(true);
 		li.querySelector("label").setAttribute("for", feature.slug);
 		li.querySelector("span").textContent = `${index + 1}.  ${feature.name}`;
+		li.dataset.number = index + 1;
 
 		const input = li.querySelector("input");
 		input.name = input.id = feature.slug;
@@ -71,6 +72,7 @@ function getExtensionState() {
 			downloadNotifier.classList.add("hidden");
 		}
 
+		document.getElementById("extension_icon").src = response.manifestIcon;
 		document.getElementById("extension_version").textContent = `v${response.manifestVersion}`;
 	});
 }
@@ -78,13 +80,30 @@ function getExtensionState() {
 document.addEventListener("DOMContentLoaded", () => {
 	getExtensionState();
 
-	document.getElementById("check_for_updates").addEventListener("click", () => {
-		chrome.runtime.sendMessage({ action: "CHECK_FOR_UPDATES" }, (response) => {
-			if (response.error) {
-				return;
-			}
+	document.getElementById("check_for_updates").addEventListener("click", (event) => {
+		const button = event.currentTarget;
+		const icon = button.querySelector("svg");
+		if (button.disabled) {
+			return;
+		}
 
-			getExtensionState();
+		const startTime = Date.now();
+		const spinTurnDuration = 1000;
+		button.disabled = true;
+		icon.classList.add("spin-loading");
+		chrome.runtime.sendMessage({ action: "CHECK_FOR_UPDATES" }, (response) => {
+			const elapsed = Date.now() - startTime;
+			const turnsNeeded = Math.max(1, Math.ceil(elapsed / spinTurnDuration));
+			const remaining = turnsNeeded * spinTurnDuration - elapsed;
+			setTimeout(() => {
+				icon.classList.remove("spin-loading");
+				button.disabled = false;
+				if (response.error) {
+					return;
+				}
+
+				getExtensionState();
+			}, remaining);
 		});
 	});
 });

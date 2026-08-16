@@ -66,10 +66,12 @@ function getExtensionState(callbackFn) {
 		}
 
 		getDataFromStorage((data) => {
-			const manifestVersion = chrome.runtime.getManifest().version;
+			const extensionInfo = chrome.runtime.getManifest();
+			const manifestVersion = extensionInfo.version;
 			const defaultResponse = {
 				...data,
 				tab: tabs[0],
+				manifestIcon: chrome.runtime.getURL(extensionInfo.action.default_icon?.["32"] || extensionInfo.icons?.["128"] || "src/images/logo.png"),
 				manifestVersion,
 				isValidTargetTab: false,
 				isNewerVersion: isNewerVersion(data.latestNotifiedVersion, manifestVersion),
@@ -131,7 +133,7 @@ function isNewerVersion(latestVersion, currentVersion) {
 
 async function getExtensionInfo() {
 	const extensionInfo = chrome.runtime.getManifest();
-	const iconPath = extensionInfo.icons["128"];
+	const iconPath = extensionInfo.action.default_icon?.["32"] || extensionInfo.icons?.["128"] || "src/images/logo.png";
 	const response = await fetch(chrome.runtime.getURL(iconPath));
 	const buffer = await response.arrayBuffer();
 	let binary = "";
@@ -147,14 +149,14 @@ async function getExtensionInfo() {
 }
 
 function showUpdateNotice(newerVersion, downloadUrl, extensionInfo) {
-	const noticeId = "cyt-update-notice";
+	const noticeId = "ctfyt-update-notice";
 	if (document.getElementById(noticeId)) {
 		return;
 	}
 
 	const iconImg = document.createElement("img");
 	iconImg.src = extensionInfo.extensionIcon;
-	iconImg.style.cssText = "width: 16px; height: 16px; vertical-align: middle;";
+	iconImg.style.cssText = "width: 16px; height: 16px; margin-bottom: 2px; vertical-align: middle;";
 
 	const notifierTitle = document.createElement("div");
 	notifierTitle.style.cssText = "font: 16px/1 Roboto, Arial, sans-serif; font-weight: bold;";
@@ -171,7 +173,7 @@ function showUpdateNotice(newerVersion, downloadUrl, extensionInfo) {
 	closeButton.addEventListener("click", () => noticeContainer.remove());
 
 	const noticeHeader = document.createElement("div");
-	noticeHeader.style.cssText = "display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;";
+	noticeHeader.style.cssText = "display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;";
 	noticeHeader.append(containerHeader, closeButton);
 
 	const sourceLink = document.createElement("a");
@@ -181,7 +183,7 @@ function showUpdateNotice(newerVersion, downloadUrl, extensionInfo) {
 	sourceLink.style.cssText = "display: block; color: #3ea6ff; text-decoration: none;";
 	sourceLink.textContent = `A new update v${newerVersion} is available! Click here to download from the source.`;
 
-	const noticeContainerStyle = "position: fixed; bottom: 24px; right: 24px; z-index: 2147483647; max-width: 320px; padding: 12px 16px; background: #212121; color: #ffffff; font: 14px/1.4 Roboto, Arial, sans-serif; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); user-select: none;";
+	const noticeContainerStyle = "position: fixed; bottom: 24px; right: 24px; z-index: 2147483647; max-width: 360px; padding: 12px 16px; background: #212121; color: #ffffff; font: 14px/1.4 Roboto, Arial, sans-serif; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); user-select: none;";
 	noticeContainer.id = noticeId;
 	noticeContainer.style.cssText = noticeContainerStyle;
 	noticeContainer.append(noticeHeader, sourceLink);

@@ -1,17 +1,17 @@
 {
-	"name": "CustomYTools",
-	"version": "1.1.1",
+	"name": "CustomTools for YouTube™",
+	"version": "1.2.0",
 	"description": "This extension was created to address various flaws in YouTube and provide necessary fixes.",
 	"manifest_version": 3,
 	"author": "SamGun-Official",
 	"action": {
 		"default_icon": {
-			"16": "src/images/logo.png",
-			"24": "src/images/logo.png",
-			"32": "src/images/logo.png"
+			"16": "src/images/logo_simple.png",
+			"24": "src/images/logo_simple.png",
+			"32": "src/images/logo_simple.png"
 		},
 		"default_popup": "popup.html",
-		"default_title": "CustomYTools"
+		"default_title": "CustomTools for YouTube™"
 	},
 	"background": {
 		"service_worker": "src/js/background.js"

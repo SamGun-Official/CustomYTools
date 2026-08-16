@@ -1,4 +1,5 @@
 {
+	"name": "CustomYTools",
 	"private": true,
 	"scripts": {
 		"watch": "npx @tailwindcss/cli -i ./src/css/app.css -o ./src/css/build.css --watch"

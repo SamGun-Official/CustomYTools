@@ -9,3 +9,17 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
+
+@keyframes spin-loading {
+	from {
+		transform: rotate(0deg);
+	}
+
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.spin-loading {
+	animation: spin-loading 1s linear infinite;
+}
