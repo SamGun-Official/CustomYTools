@@ -5,7 +5,8 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-zip_name="CustomYTools.zip"
+manifest_version="$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' "$root/manifest.json" | head -1 | sed -E 's/.*"([^"]+)"$/\1/')"
+zip_name="CustomYTools_v${manifest_version}.zip"
 zip_path="$root/$zip_name"
 staging_dir="$(mktemp -d)"
 

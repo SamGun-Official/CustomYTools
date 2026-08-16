@@ -4,7 +4,8 @@
 $ErrorActionPreference = "Stop"
 
 $root = $PSScriptRoot
-$zipName = "CustomYTools.zip"
+$manifestVersion = (Get-Content (Join-Path $root "manifest.json") -Raw | ConvertFrom-Json).version
+$zipName = "CustomYTools_v$manifestVersion.zip"
 $zipPath = Join-Path $root $zipName
 $stagingDir = Join-Path $env:TEMP "CustomYTools_build_$(Get-Random)"
 

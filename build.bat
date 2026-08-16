@@ -5,7 +5,8 @@ REM Includes: /scripts, /src (except src/css/app.css), config.json, manifest.jso
 setlocal
 
 set "ROOT=%~dp0"
-set "ZIP_NAME=CustomYTools.zip"
+for /f "delims=" %%V in ('powershell -NoProfile -Command "(Get-Content '%ROOT%manifest.json' -Raw | ConvertFrom-Json).version"') do set "MANIFEST_VERSION=%%V"
+set "ZIP_NAME=CustomYTools_v%MANIFEST_VERSION%.zip"
 set "ZIP_PATH=%ROOT%%ZIP_NAME%"
 set "STAGING_DIR=%TEMP%\CustomYTools_build_%RANDOM%"
 
