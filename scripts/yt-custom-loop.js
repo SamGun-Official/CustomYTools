@@ -16,9 +16,16 @@
 
 	const CONTROLS_ID = "yt-custom-loop-controls";
 	const MIN_LOOP_DURATION_SECONDS = 3;
+	const LIVE_STREAM_TITLE = "Custom loop is disabled for live streams";
 
 	function getVideoElement() {
 		return document.getElementsByClassName("video-stream html5-main-video")[0];
+	}
+
+	function isLiveStream() {
+		const player = document.getElementById("movie_player");
+
+		return player !== null && player.getAttribute("data-ctfyt-live") === "true";
 	}
 
 	function parseTimeToSeconds(timeString) {
@@ -42,6 +49,10 @@
 		startTimeInput.value = "00:00:00";
 		startTimeInput.placeholder = "00:00:00";
 		startTimeInput.title = "Loop start time (HH:MM:SS)";
+		startTimeInput.autocomplete = "off";
+		startTimeInput.spellcheck = false;
+		startTimeInput.setAttribute("autocorrect", "off");
+		startTimeInput.setAttribute("autocapitalize", "off");
 
 		const inputSeparator = document.createElement("span");
 		inputSeparator.className = "ctfyt-control-separator";
@@ -55,6 +66,8 @@
 		wrapper.className = "ctfyt-control-group";
 		wrapper.append(startTimeInput, inputSeparator, endTimeInput);
 
+		const startTimeDefaultTitle = startTimeInput.title;
+		const endTimeDefaultTitle = endTimeInput.title;
 		let loopTimer = null;
 
 		function stopLoop() {
@@ -100,6 +113,34 @@
 
 		startTimeInput.addEventListener("change", handleRangeChange);
 		endTimeInput.addEventListener("change", handleRangeChange);
+
+		function updateLiveLockState() {
+			const isLive = isLiveStream();
+			if (startTimeInput.disabled === isLive) {
+				return;
+			}
+
+			startTimeInput.disabled = isLive;
+			endTimeInput.disabled = isLive;
+			startTimeInput.style.cursor = isLive ? "not-allowed" : "";
+			endTimeInput.style.cursor = isLive ? "not-allowed" : "";
+			startTimeInput.title = isLive ? LIVE_STREAM_TITLE : startTimeDefaultTitle;
+			endTimeInput.title = isLive ? LIVE_STREAM_TITLE : endTimeDefaultTitle;
+			if (isLive) {
+				stopLoop();
+			}
+		}
+
+		updateLiveLockState();
+
+		const liveLockTimer = setInterval(() => {
+			if (!document.body.contains(wrapper)) {
+				clearInterval(liveLockTimer);
+				return;
+			}
+
+			updateLiveLockState();
+		}, 200);
 
 		return wrapper;
 	}

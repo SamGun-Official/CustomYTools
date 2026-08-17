@@ -319,6 +319,13 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 						target: { tabId },
 						files: feature.render ? ["scripts/yt-controls-section.js", feature.location] : [feature.location],
 					});
+					if (feature.liveAware) {
+						chrome.scripting.executeScript({
+							target: { tabId },
+							files: ["scripts/yt-live-status-bridge.js"],
+							world: "MAIN",
+						});
+					}
 				}
 			}
 		});

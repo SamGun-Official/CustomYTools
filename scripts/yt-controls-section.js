@@ -42,7 +42,8 @@
 				box-sizing: border-box;
 			}
 
-			html[dark] .ctfyt-section {
+			html[dark] .ctfyt-section,
+			.ctfyt-section.ctfyt-section--dark {
 				--ctfyt-bg: rgba(255, 255, 255, 0.05);
 				--ctfyt-border: rgba(255, 255, 255, 0.13);
 				--ctfyt-text-primary: #f1f1f1;
@@ -52,6 +53,10 @@
 				--ctfyt-control-bg: rgba(255, 255, 255, 0.09);
 				--ctfyt-control-border: rgba(255, 255, 255, 0.22);
 				--ctfyt-control-hover-bg: rgba(255, 255, 255, 0.16);
+			}
+
+			.ctfyt-section-wrapper--mobile {
+				margin: 8px 16px 12px;
 			}
 
 			.ctfyt-section__header {
@@ -159,19 +164,22 @@
 
 			.ctfyt-control-input {
 				width: 72px;
+				margin: 0 !important;
 				padding: 5px 8px;
 				background: var(--ctfyt-control-bg);
 				font: 500 12px/1 Roboto, Arial, sans-serif;
 				text-align: center;
 				color: var(--ctfyt-text-primary);
-				border: 1px solid var(--ctfyt-accent);
+				border: 1px solid var(--ctfyt-accent) !important;
 				border-radius: 8px;
+				appearance: none;
+				-webkit-appearance: none;
 			}
 
 			.ctfyt-control-button:focus,
 			.ctfyt-control-input:focus {
 				outline: none;
-				box-shadow: 0 0 0 2px rgba(45, 212, 191, 0.35);
+				box-shadow: 0 0 0 1px var(--ctfyt-accent), 0 0 0 3px rgba(45, 212, 191, 0.35);
 			}
 
 			.ctfyt-control-separator {
@@ -187,6 +195,23 @@
 			}
 		`;
 		document.head.appendChild(style);
+	}
+
+	function isDarkFallback() {
+		if (document.documentElement.hasAttribute("dark")) {
+			return false;
+		}
+
+		const background = getComputedStyle(document.documentElement).backgroundColor;
+		const channels = background.match(/\d+(\.\d+)?/g);
+		if (channels === null || channels.length < 3) {
+			return false;
+		}
+
+		const [r, g, b] = channels.map(Number);
+		const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+		return luminance < 0.5;
 	}
 
 	function buildBadgeIcon() {
@@ -252,15 +277,57 @@
 		return innerSection;
 	}
 
+	let slugOrder = [];
+	chrome.storage.local.get("featureList", (data) => {
+		if (chrome.runtime.lastError || !data.featureList) {
+			return;
+		}
+
+		slugOrder = data.featureList.map((feature) => feature.slug);
+	});
+
+	function insertInnerSectionInOrder(body, innerSection, slug) {
+		const targetIndex = slugOrder.indexOf(slug);
+		const nextSibling = Array.from(body.children).find((child) => {
+			const childSlug = child.id.replace("ctfyt-inner-section-", "");
+			const childIndex = slugOrder.indexOf(childSlug);
+
+			return childIndex === -1 || childIndex > targetIndex;
+		});
+		if (nextSibling) {
+			body.insertBefore(innerSection, nextSibling);
+		} else {
+			body.appendChild(innerSection);
+		}
+	}
+
 	window.ctfytGetControlsInnerSection = function (id, title) {
-		const middleRow = document.querySelector("ytd-watch-metadata #middle-row");
-		if (middleRow === null) {
-			return null;
+		let injectionTarget = document.querySelector("ytd-watch-metadata #middle-row");
+		let isMobile = false;
+		if (injectionTarget === null) {
+			const mobileMetadataRenderer = document.getElementsByTagName("ytm-slim-video-metadata-section-renderer");
+			if (mobileMetadataRenderer.length > 0) {
+				injectionTarget = mobileMetadataRenderer[0];
+				isMobile = true;
+			} else {
+				return null;
+			}
 		}
 
 		ensureStylesInjected();
 		if (document.getElementById(SECTION_ID) === null) {
-			middleRow.appendChild(buildSection());
+			const section = buildSection();
+			if (isDarkFallback()) {
+				section.classList.add("ctfyt-section--dark");
+			}
+			if (isMobile) {
+				const wrapper = document.createElement("div");
+				wrapper.className = "ctfyt-section-wrapper--mobile";
+				wrapper.appendChild(section);
+				injectionTarget.appendChild(wrapper);
+			} else {
+				injectionTarget.appendChild(section);
+			}
 		}
 
 		const innerSectionId = `ctfyt-inner-section-${id}`;
@@ -268,7 +335,7 @@
 		if (innerSection === null) {
 			innerSection = buildInnerSection(title);
 			innerSection.id = innerSectionId;
-			document.getElementById(SECTION_BODY_ID).appendChild(innerSection);
+			insertInnerSectionInOrder(document.getElementById(SECTION_BODY_ID), innerSection, id);
 		}
 
 		return innerSection.querySelector(".ctfyt-inner-section__content");
