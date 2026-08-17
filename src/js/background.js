@@ -15,7 +15,10 @@ async function loadDefaultConfig() {
 function checkAvailableFeatures(storedFeatures, defaultFeatures) {
 	const storedFeaturesMap = new Map((storedFeatures ?? []).map((storedFeature) => [storedFeature.slug, storedFeature]));
 	const reconciledFeatures = defaultFeatures.map((defaultFeature) => {
-		return storedFeaturesMap.get(defaultFeature.slug) ?? defaultFeature;
+		const storedFeature = storedFeaturesMap.get(defaultFeature.slug);
+		const reconciledFeature = { ...defaultFeature, ...storedFeature };
+
+		return storedFeature ? reconciledFeature : defaultFeature;
 	});
 
 	return reconciledFeatures;
@@ -217,22 +220,22 @@ function showUpdateNotice(newerVersion, downloadUrl, extensionInfo) {
 }
 
 function prepareUpdateNotice(tabId, url) {
-	const updateNoticeSessionKey = "updateNotificationShown";
 	if (!YT_REGEX.test(url || "")) {
 		return;
 	}
 
-	chrome.storage.session.get(updateNoticeSessionKey, (session) => {
-		if (session[updateNoticeSessionKey]) {
+	getDataFromStorage((data) => {
+		if (data.error || !isNewerVersion(data.latestNotifiedVersion, data.currentVersion)) {
 			return;
 		}
 
-		getDataFromStorage((data) => {
-			if (data.error || !isNewerVersion(data.latestNotifiedVersion, data.currentVersion)) {
+		const updateNoticeSessionKey = "updateNotificationShownVersion";
+		chrome.storage.session.get(updateNoticeSessionKey, (session) => {
+			if (session[updateNoticeSessionKey] === data.latestNotifiedVersion) {
 				return;
 			}
 
-			chrome.storage.session.set({ [updateNoticeSessionKey]: true });
+			chrome.storage.session.set({ [updateNoticeSessionKey]: data.latestNotifiedVersion });
 			getExtensionInfo().then((extensionInfo) => {
 				chrome.scripting.executeScript({
 					target: { tabId },
@@ -314,7 +317,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 				if (feature.active && feature.location) {
 					chrome.scripting.executeScript({
 						target: { tabId },
-						files: [feature.location],
+						files: feature.render ? ["scripts/yt-controls-section.js", feature.location] : [feature.location],
 					});
 				}
 			}

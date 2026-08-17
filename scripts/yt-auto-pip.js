@@ -1,29 +1,28 @@
-/**
- * @TODO
- * - Use inline player as an alternative instead using PiP
- */
+// ==UserScript==
+// @name         YouTube Auto Picture-in-Picture (PiP)
+// @namespace    http://tampermonkey.net/
+// @version      1.1
+// @description  Automatically pops the video into Picture-in-Picture when scrolled away, and restores it when scrolled back.
+// @author       SamGun-Official
+// @match        https://youtube.com/*
+// @match        https://www.youtube.com/*
+// @match        https://m.youtube.com/*
+// @icon         none
+// @grant        none
+// ==/UserScript==
 
 (function () {
 	"use strict";
 
-	function getVideoElement() {
-		return document.getElementsByClassName("video-stream html5-main-video")[0];
-	}
-
-	// Tracks whether the currently active PiP window was opened by this script (vs. the user
-	// opening it manually via the native "I" button), so scrolling back into view only closes
-	// PiP windows we opened ourselves.
 	let autoTriggered = false;
 	let observedVideo = null;
 	let observer = null;
-	// Whether the last intersection reading found the video out of view, kept separate from the
-	// observer callback so the gesture retry below (see pipRequestPending) can re-check it later.
 	let videoOutOfView = false;
-	// requestPictureInPicture() needs a recent "qualifying" user gesture (click/keydown — scroll
-	// does not reliably count in Chrome), so a request made right as the video scrolls out of view
-	// can be silently rejected once that gesture has aged out. When that happens this stays true
-	// until the next qualifying gesture retries it, instead of only getting one attempt tied to scroll.
 	let pipRequestPending = false;
+
+	function getVideoElement() {
+		return document.getElementsByClassName("video-stream html5-main-video")[0];
+	}
 
 	function attemptEnterPip(video) {
 		video
@@ -45,7 +44,6 @@
 		}
 
 		videoOutOfView = !entry.isIntersecting;
-
 		if (videoOutOfView) {
 			if (!video.paused && document.pictureInPictureElement !== video) {
 				attemptEnterPip(video);
@@ -76,11 +74,6 @@
 		attemptEnterPip(video);
 	}
 
-	// click/keydown are activation-triggering gestures per spec (unlike scroll/wheel), so retrying
-	// from inside one of these reliably succeeds even after the original scroll-driven attempt was rejected.
-	document.addEventListener("click", retryPendingPip, true);
-	document.addEventListener("keydown", retryPendingPip, true);
-
 	function attachObserver(video) {
 		if (observer !== null) {
 			observer.disconnect();
@@ -89,14 +82,14 @@
 		observedVideo = video;
 		observer = new IntersectionObserver(handleIntersection, { threshold: 0 });
 		observer.observe(video);
-
 		video.addEventListener("leavepictureinpicture", () => {
 			autoTriggered = false;
 		});
 	}
 
-	// Polled (not one-shot) since the <video> element may not exist yet on initial load, and to
-	// re-attach if YouTube ever swaps it out for a different element.
+	document.addEventListener("click", retryPendingPip, true);
+	document.addEventListener("keydown", retryPendingPip, true);
+
 	setInterval(() => {
 		const video = getVideoElement();
 		if (video !== undefined && video !== observedVideo) {

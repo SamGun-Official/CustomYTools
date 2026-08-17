@@ -1,13 +1,13 @@
 // ==UserScript==
-// @name         YouTube Shorts (No Loop)
+// @name         YouTube Redirect Shorts
 // @namespace    http://tampermonkey.net/
 // @version      1.4
-// @description  Automatically redirect "Shorts" videos to the normal YouTube player.
+// @description  Automatically redirects Shorts links to the regular watch page.
 // @author       SamGun-Official
-// @match        https://www.youtube.com/*
 // @match        https://youtube.com/*
+// @match        https://www.youtube.com/*
 // @match        https://m.youtube.com/*
-// @icon         https://www.dropmedia.co.uk/wp-content/uploads/2023/07/youtube-shorts6078.jpg
+// @icon         none
 // @grant        none
 // ==/UserScript==
 

@@ -1,99 +1,76 @@
 // ==UserScript==
 // @name         YouTube Clean UI
 // @namespace    http://tampermonkey.net/
-// @version      2.3.9
-// @description  Clean and declutter UI in YouTube.
+// @version      2.3.10
+// @description  Strips out ads and clutter from the page for a cleaner viewing experience.
 // @author       SamGun-Official
 // @match        https://youtube.com/*
 // @match        https://www.youtube.com/*
 // @match        https://m.youtube.com/*
-// @icon         https://i.ibb.co/X5f50Cg/Screen-Shot-2021-07-19-at-9-31-54-PM.png
+// @icon         none
 // @grant        none
 // ==/UserScript==
 
 (function () {
 	"use strict";
 
-	// Check which one is still relevant
-	let ogVolume = 1,
-		pbRate = 1,
-		preventSkip = false,
-		scriptTimer = setInterval(() => {
-			if (document.getElementsByClassName("video-stream html5-main-video")[0] !== undefined) {
-				let ad = document.getElementsByClassName("video-ads ytp-ad-module")[0];
-				let vid = document.getElementsByClassName("video-stream html5-main-video")[0];
-				if (ad == undefined) {
-					pbRate = vid.playbackRate;
-				}
+	function removeAdElement(selector) {
+		const ad = document.querySelector(selector);
+		if (ad) {
+			ad.remove();
+		}
+	}
 
-				let closeAble = document.getElementsByClassName("ytp-ad-overlay-close-button");
-				for (let i = 0; i < closeAble.length; i++) {
-					closeAble[i].click();
-				}
-				if (document.getElementsByClassName("style-scope ytd-watch-next-secondary-results-renderer sparkles-light-cta GoogleActiveViewElement")[0] !== undefined) {
-					let sideAd = document.getElementsByClassName("style-scope ytd-watch-next-secondary-results-renderer sparkles-light-cta GoogleActiveViewElement")[0];
-					sideAd.style.display = "none";
-				}
-				if (document.getElementsByClassName("style-scope ytd-item-section-renderer sparkles-light-cta")[0] !== undefined) {
-					let sideAd_ = document.getElementsByClassName("style-scope ytd-item-section-renderer sparkles-light-cta")[0];
-					sideAd_.style.display = "none";
-				}
-				if (document.getElementsByClassName("ytp-skip-ad-button")[0] !== undefined) {
-					let skipBtn = document.getElementsByClassName("ytp-skip-ad-button")[0];
-					skipBtn.click();
-				}
-				if (document.getElementsByClassName("ytp-ad-message-container")[0] !== undefined) {
-					let incomingAd = document.getElementsByClassName("ytp-ad-message-container")[0];
-					incomingAd.style.display = "none";
-				}
-				if (document.getElementsByClassName("style-scope ytd-companion-slot-renderer")[0] !== undefined) {
-					document.getElementsByClassName("style-scope ytd-companion-slot-renderer")[0].remove();
-				}
-				if (ad !== undefined) {
-					if (ad.children.length > 0) {
-						if (document.querySelector(".ytp-ad-text[class*='ytp-ad-preview-text']") !== undefined) {
-							vid.playbackRate = 16;
-							vid.muted = true;
-						}
-					}
-				}
-				if (document.getElementById("masthead-ad") !== null) {
-					let headerAd = document.getElementById("masthead-ad");
-					headerAd.remove();
-				}
-				if (document.getElementsByTagName("ytd-ad-slot-renderer")[0] !== undefined) {
-					let rightSideAd = document.getElementsByTagName("ytd-ad-slot-renderer")[0];
-					rightSideAd.remove();
-				}
-				if (document.getElementsByTagName("ytd-reel-shelf-renderer")[0] !== undefined) {
-					let rightSideShorts = document.getElementsByTagName("ytd-reel-shelf-renderer")[0];
-					rightSideShorts.remove();
-				}
-				// Remove new UI panel while still on old UI
-				// Rework this later when changes are rolling out to all users
-				if (document.getElementById("panels") !== null) {
-					let sidePanel = document.getElementById("panels");
-					let panelSections = sidePanel.children;
-					for (const section of panelSections) {
-						if (section.targetId === "engagement-panel-ads") {
-							section.style.display = "none";
-						}
-					}
-				}
-				if (document.getElementsByTagName("ytd-enforcement-message-view-model")[0] !== undefined) {
-					location.reload();
-					clearInterval(scriptTimer);
-				}
-				if (document.querySelectorAll(".html5-video-player.ad-created")[0] !== undefined) {
-					let navDownBtn = document.querySelectorAll(".navigation-container.style-scope.ytd-shorts #navigation-button-down button")[0];
-					if (!preventSkip && navDownBtn) {
-						navDownBtn.click();
-						preventSkip = true;
-						setTimeout(() => {
-							preventSkip = false;
-						}, 3000);
-					}
+	let ogVolume = 1;
+	let pbRate = 1;
+	let preventSkip = false;
+	const scriptTimer = setInterval(() => {
+		document.querySelectorAll(".ytp-ad-overlay-close-button").forEach((button) => button.click());
+		removeAdElement("#masthead-ad"); // Header Ad
+		removeAdElement(".style-scope.ytd-watch-next-secondary-results-renderer.sparkles-light-cta.GoogleActiveViewElement"); // Side Ad 1
+		removeAdElement(".style-scope.ytd-item-section-renderer.sparkles-light-cta"); // Side Ad 2
+		removeAdElement(".style-scope.ytd-companion-slot-renderer"); // Companion Ad
+		removeAdElement(".ytp-ad-message-container"); // Incoming Ad
+		removeAdElement("ytd-ad-slot-renderer"); // Right Side Ad
+		removeAdElement("ytd-reel-shelf-renderer"); // Right Side Shorts
+
+		const vid = document.querySelector(".video-stream.html5-main-video");
+		const ad = document.querySelector(".video-ads.ytp-ad-module");
+		if (!vid) {
+			return;
+		}
+		if (!ad) {
+			pbRate = vid.playbackRate;
+		}
+		if (ad && ad.children.length > 0 && document.querySelector(".ytp-ad-text[class*='ytp-ad-preview-text']") !== undefined) {
+			vid.playbackRate = 16;
+			vid.muted = true;
+		}
+
+		const skipButton = document.querySelector(".ytp-skip-ad-button");
+		if (skipButton) {
+			skipButton.click();
+		}
+
+		const sidePanel = document.getElementById("panels");
+		if (sidePanel) {
+			for (const section of sidePanel.children) {
+				if (section.targetId === "engagement-panel-ads") {
+					section.style.display = "none";
 				}
 			}
-		}, 100);
+		}
+		if (document.querySelector("ytd-enforcement-message-view-model")) {
+			location.reload();
+			clearInterval(scriptTimer);
+		}
+		if (document.querySelector(".html5-video-player.ad-created")) {
+			const navigationDownButton = document.querySelector(".navigation-container.style-scope.ytd-shorts #navigation-button-down button");
+			if (!preventSkip && navigationDownButton) {
+				navigationDownButton.click();
+				preventSkip = true;
+				setTimeout(() => (preventSkip = false), 3000);
+			}
+		}
+	}, 100);
 })();

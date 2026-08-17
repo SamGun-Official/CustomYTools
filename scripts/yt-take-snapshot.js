@@ -1,3 +1,16 @@
+// ==UserScript==
+// @name         YouTube Take Frame Snapshot
+// @namespace    http://tampermonkey.net/
+// @version      1.1
+// @description  Capture and download the current video frame as a PNG with one click.
+// @author       SamGun-Official
+// @match        https://youtube.com/*
+// @match        https://www.youtube.com/*
+// @match        https://m.youtube.com/*
+// @icon         none
+// @grant        none
+// ==/UserScript==
+
 (function () {
 	"use strict";
 
@@ -26,60 +39,41 @@
 		try {
 			dataUrl = canvas.toDataURL("image/png");
 		} catch (error) {
-			// Canvas comes back tainted for DRM-protected videos (EME), which blocks pixel readout — nothing more to do here.
-			console.warn("[CustomYTools] Unable to capture snapshot for this video:", error);
+			console.warn("Unable to capture snapshot for this video:", error);
 			return;
 		}
 
 		const title = sanitizeFilename(document.title.replace(/ - YouTube$/, "")) || "youtube-video";
 		const timestamp = Math.floor(video.currentTime);
-
 		const link = document.createElement("a");
 		link.href = dataUrl;
 		link.download = `${title}_${timestamp}s.png`;
 		link.click();
 	}
 
-	function buildButton() {
+	function buildControls() {
 		const button = document.createElement("button");
 		button.id = CONTROLS_ID;
 		button.type = "button";
-		button.textContent = "SS";
+		button.className = "ctfyt-control-button";
 		button.title = "Take a snapshot of the current video frame";
-		button.style.marginRight = "8px";
-		button.style.padding = "4px 10px";
-		button.style.borderRadius = "8px";
-		button.style.border = "1px solid rgba(255, 255, 255, 0.2)";
-		button.style.background = "transparent";
-		button.style.color = "inherit";
-		button.style.font = "inherit";
-		button.style.fontWeight = "bold";
-		button.style.cursor = "pointer";
-
+		button.setAttribute("aria-label", "Take a snapshot of the current video frame");
+		button.textContent = "Take Snapshot";
 		button.addEventListener("click", takeSnapshot);
 
 		return button;
 	}
 
-	function injectButton() {
+	setInterval(() => {
 		if (document.getElementById(CONTROLS_ID) !== null) {
 			return;
 		}
 
-		const topLevelButtons = document.querySelector("ytd-menu-renderer.ytd-watch-metadata #top-level-buttons-computed");
-		if (topLevelButtons === null) {
+		const innerSection = window.ctfytGetControlsInnerSection("take_video_snapshot", "Video Snapshot");
+		if (innerSection === null) {
 			return;
 		}
 
-		// Sit right next to the custom loop's start time input when that feature is also on, otherwise take its usual spot.
-		const loopControls = document.getElementById("yt-custom-loop-controls");
-		if (loopControls !== null) {
-			loopControls.insertAdjacentElement("afterend", buildButton());
-		} else {
-			topLevelButtons.insertBefore(buildButton(), topLevelButtons.firstChild);
-		}
-	}
-
-	// Kept running (not cleared) since YouTube re-renders #top-level-buttons-computed on SPA video-to-video navigation, removing our button.
-	setInterval(injectButton, 100);
+		innerSection.appendChild(buildControls());
+	}, 100);
 })();

@@ -39,11 +39,11 @@ build.bat
 ./build.sh
 ```
 
-Any of these produce a `CustomYTools.zip` containing just what's needed to load the extension, ready to be loaded as described above.
+Any of these produce a `CustomYTools_v{VersionNumber}.zip` containing just what's needed to load the extension, ready to be loaded as described above.
 
 ## Updating
 
-The extension checks for updates automatically and will notify you in the popup (and on-page, for critical updates) when a newer version is available.
+The extension checks for updates automatically and will notify you in the popup (and on-page) when a newer version is available.
 
 ## Author
 
